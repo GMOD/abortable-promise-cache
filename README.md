@@ -23,14 +23,15 @@ const cache = new AbortablePromiseCache({
     }
 })
 
-// cache.has('some key')
-// // ↳ true if it is in the cache and has not been aborted
-// cache.hasGood('some key')
-// // ↳ true if it is in the cache and has not been rejected for any reason (abort or other error)
-
-// make a cached request. the returned promise will abort with the given abort signal if
-// there is not already a cached copy that has been resolved
+// Make a cached request. The returned promise will abort with the given abort signal if
+// there is not already a cached copy that has been resolved.
+// Fill requests will be signaled to abort if all the requests for them
+// so far have been aborted.
 cache.get('some key', { ...anyStuff }, abortSignal)
+
+// deleting and clearing will abort any outstanding requests
+cache.delete('some key')
+cache.clear()
 ```
 
 ## API
@@ -41,6 +42,8 @@ cache.get('some key', { ...anyStuff }, abortSignal)
 
 -   [constructor](#constructor)
 -   [get](#get)
+-   [delete](#delete)
+-   [clear](#clear)
 
 ### constructor
 
@@ -58,6 +61,21 @@ cache.get('some key', { ...anyStuff }, abortSignal)
 -   `key` **any** cache key to use for this request
 -   `data` **any** data passed as the first argument to the fill callback
 -   `signal` **AbortSignal?** optional AbortSignal object that aborts the request
+
+### delete
+
+delete the given entry from the cache. if it exists and its fill request has
+not yet settled, the fill will be signaled to abort.
+
+**Parameters**
+
+-   `key` **any** 
+
+### clear
+
+Clear all requests from the cache. Aborts any that have not settled.
+
+Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** count of entries deleted
 
 ## Academic Use
 

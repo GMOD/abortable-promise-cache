@@ -133,4 +133,33 @@ export default class AbortablePromiseCache {
       signal,
     )
   }
+
+  /**
+   * delete the given entry from the cache. if it exists and its fill request has
+   * not yet settled, the fill will be signaled to abort.
+   *
+   * @param {any} key
+   */
+  delete(key) {
+    const cachedEntry = this.cache.get(key)
+    if (cachedEntry) {
+      if (!cachedEntry.settled) cachedEntry.aborter.abort()
+      this.cache.delete(key)
+    }
+  }
+
+  /**
+   * Clear all requests from the cache. Aborts any that have not settled.
+   * @returns {number} count of entries deleted
+   */
+  clear() {
+    // iterate without needing regenerator-runtime
+    const keyIter = this.cache.keys()
+    let deleteCount = 0
+    for (let result = keyIter.next(); !result.done; result = keyIter.next()) {
+      this.delete(result.value)
+      deleteCount += 1
+    }
+    return deleteCount
+  }
 }

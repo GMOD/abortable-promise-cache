@@ -33,10 +33,6 @@ export default class AggregateAbortController {
         this.handleAborted(signal)
       })
     }
-    //  else {
-    //   console.log('wat')
-    //   debugger
-    // }
   }
 
   handleAborted(signal) {
@@ -48,5 +44,9 @@ export default class AggregateAbortController {
 
   get signal() {
     return this.abortController.signal
+  }
+
+  abort() {
+    this.abortController.abort()
   }
 }
