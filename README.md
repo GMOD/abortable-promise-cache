@@ -38,7 +38,8 @@ const cache = new AbortablePromiseCache({
 // there is not already a cached copy that has been resolved.
 // Fill requests will be signaled to abort if all the requests for them
 // so far have been aborted.
-cache.get('some key', { ...anyStuff }, abortSignal)
+const aborter = new AbortController()
+const result = await cache.get('some key', { ...anyStuff }, aborter.signal)
 
 // deleting and clearing will abort any outstanding requests
 cache.delete('some key')
