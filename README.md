@@ -1,12 +1,16 @@
 # abortable-promise-cache
 
 [![NPM version](https://img.shields.io/npm/v/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
-[![Coverage Status](https://img.shields.io/codecov/c/github/GMOD/bbi-js/master.svg?style=flat-square)](https://codecov.io/gh/rbuels/abortable-promise-cache/branch/master)
+[![Coverage Status](https://img.shields.io/codecov/c/github/rbuels/abortable-promise-cache/master.svg?style=flat-square)](https://codecov.io/gh/rbuels/abortable-promise-cache/branch/master)
 [![Build Status](https://travis-ci.com/rbuels/abortable-promise-cache.svg?branch=master)](https://travis-ci.com/rbuels/abortable-promise-cache)
 
 Adds AbortController/AbortSignal semantics to a cache of promises. Each `get` from the cache can optionally take an `AbortSignal` object that lets that request be aborted.
 
-Cached promises will be aborted and evicted from the cache if all the requests for 
+Cached fill requests will be aborted and evicted from the cache if all the incoming requests for it
+are aborted before the promise settles.
+
+If the fill request has already settled before all the requests for it have been aborted, it will stay
+in the cache.
 
 ## Install
 
@@ -53,7 +57,7 @@ cache.clear()
 -   `args` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** constructor args
     -   `args.fill` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** fill callback, will be called with sig `fill(data, signal)`
     -   `args.cache` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** backing store to use, must implement `get(key)`, `set(key, val)`,
-         and `delete(key)`
+          `delete(key)`, and `keys() -> iterator`
 
 ### get
 

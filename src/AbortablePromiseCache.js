@@ -7,7 +7,7 @@ export default class AbortablePromiseCache {
    * @param {object} args constructor args
    * @param {Function} args.fill fill callback, will be called with sig `fill(data, signal)`
    * @param {object} args.cache backing store to use, must implement `get(key)`, `set(key, val)`,
-   *  and `delete(key)`
+   *   `delete(key)`, and `keys() -> iterator`
    */
   constructor({ fill, cache }) {
     if (typeof fill !== 'function')
@@ -57,7 +57,7 @@ export default class AbortablePromiseCache {
         exception => {
           newEntry.settled = true
 
-          // if the promise aborts and is still in the cache, remove it
+          // if the fill aborts and is still in the cache, remove it
           if (
             AbortablePromiseCache.isAbortException(exception) &&
             this.cache.get(key) === newEntry
