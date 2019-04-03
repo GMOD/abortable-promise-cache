@@ -19,8 +19,8 @@ in the cache.
 ## Usage
 
 ```js
-const QuickLRU = require('quick-lru')
-const AbortablePromiseCache = require('abortable-promise-cache')
+import AbortablePromiseCache from 'abortable-promise-cache'
+import QuickLRU from 'quick-lru'
 
 const cache = new AbortablePromiseCache({
     // QuickLRU is a good backing cache to use, but you can use any

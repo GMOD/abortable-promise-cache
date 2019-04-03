@@ -40,13 +40,25 @@ export default class AbortablePromiseCache {
     )
   }
 
+  evict(key, entry) {
+    if (this.cache.get(key) === entry) this.cache.delete(key)
+  }
+
   fill(key, data, signal) {
     const newEntry = {
       aborter: new AggregateAbortController(),
       settled: false,
+      get aborted() {
+        return this.aborter.signal.aborted
+      },
     }
     newEntry.promise = this.fillCallback(data, newEntry.aborter.signal)
     newEntry.aborter.addSignal(signal)
+
+    // remove the fill from the cache when its abortcontroller fires, if still in there
+    newEntry.aborter.signal.addEventListener('abort', () => {
+      this.evict(key, newEntry)
+    })
 
     // chain off the cached promise to record when it settles
     newEntry.promise
@@ -57,13 +69,9 @@ export default class AbortablePromiseCache {
         exception => {
           newEntry.settled = true
 
-          // if the fill aborts and is still in the cache, remove it
-          if (
-            AbortablePromiseCache.isAbortException(exception) &&
-            this.cache.get(key) === newEntry
-          ) {
-            this.cache.delete(key)
-          }
+          // if the fill throws an abort and is still in the cache, remove it
+          if (AbortablePromiseCache.isAbortException(exception))
+            this.evict(key, newEntry)
         },
       )
       .catch(e => {
@@ -110,6 +118,12 @@ export default class AbortablePromiseCache {
     const cacheEntry = this.cache.get(key)
 
     if (cacheEntry) {
+      if (cacheEntry.aborted) {
+        // if it's aborted but has not realized it yet, evict it and redispatch
+        this.evict(key, cacheEntry)
+        return this.get(key, data, signal)
+      }
+
       if (cacheEntry.settled)
         // too late to abort, just return it
         return cacheEntry.promise
