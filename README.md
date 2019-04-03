@@ -1,6 +1,7 @@
 # abortable-promise-cache
 
 [![NPM version](https://img.shields.io/npm/v/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
+[![Coverage Status](https://img.shields.io/codecov/c/github/GMOD/bbi-js/master.svg?style=flat-square)](https://codecov.io/gh/rbuels/abortable-promise-cache/branch/master)
 [![Build Status](https://img.shields.io/travis/rbuels/abortable-promise-cache/master.svg?style=flat-square)](https://travis-ci.org/rbuels/abortable-promise-cache) 
 
 Adds AbortController/AbortSignal semantics to a cache of promises. Each `get` from the cache can optionally take an `AbortSignal` object that lets that request be aborted.

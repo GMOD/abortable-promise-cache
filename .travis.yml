@@ -14,3 +14,5 @@ script:
   # - if [ $BACKCOMPAT = "true" ]; then npm run built-tests; else npm run test; fi
 cache:
   - node_modules
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
