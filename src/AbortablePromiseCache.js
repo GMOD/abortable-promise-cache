@@ -2,8 +2,6 @@ import AggregateAbortController from './AggregateAbortController'
 
 const { AbortSignal } = require('abortcontroller-polyfill/dist/cjs-ponyfill')
 
-if (!AbortSignal) throw new Error('no abortsignal')
-
 export default class AbortablePromiseCache {
   /**
    * @param {object} args constructor args

@@ -102,6 +102,9 @@ test('cache 2 requests, one aborted', async () => {
   expect(await resultP2).toBe(42)
   await expect(resultP1).rejects.toThrow(/aborted/)
   expect(fillAborted).toBe(false)
+  expect(callCount).toBe(1)
+  expect(await cache.get('foo')).toBe(42)
+  expect(callCount).toBe(1)
 })
 
 test('cache 2 requests, both aborted, and fill aborted', async () => {
@@ -130,6 +133,40 @@ test('cache 2 requests, both aborted, and fill aborted', async () => {
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   aborter1.abort()
   aborter2.abort()
+  jest.runAllTimers()
+  expect(callCount).toBe(1)
+  expect(which).toBe(1)
+  await expect(resultP2).rejects.toThrow(/aborted/)
+  await expect(resultP1).rejects.toThrow(/aborted/)
+  expect(fillAborted).toBe(true)
+})
+
+test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async () => {
+  let callCount = 0
+  let which = 0
+  let fillAborted = false
+  const cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 2 }),
+    async fill({ whichCall }, signal) {
+      callCount += 1
+      which = whichCall
+      await delay(30)
+      if (signal.aborted) {
+        fillAborted = true
+        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
+
+      return 42
+    },
+  })
+
+  const aborter1 = new AbortController()
+  const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
+  jest.advanceTimersByTime(10)
+  const aborter2 = new AbortController()
+  aborter1.abort()
+  aborter2.abort()
+  const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   jest.runAllTimers()
   expect(callCount).toBe(1)
   expect(which).toBe(1)
