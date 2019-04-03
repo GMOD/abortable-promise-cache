@@ -1,6 +1,4 @@
-const {
-  AbortController,
-} = require('abortcontroller-polyfill/dist/cjs-ponyfill')
+import { AbortController } from './abortcontroller-ponyfill'
 
 class NullSignal {}
 

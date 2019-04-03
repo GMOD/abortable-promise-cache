@@ -1,6 +1,5 @@
+import { AbortSignal } from './abortcontroller-ponyfill'
 import AggregateAbortController from './AggregateAbortController'
-
-const { AbortSignal } = require('abortcontroller-polyfill/dist/cjs-ponyfill')
 
 export default class AbortablePromiseCache {
   /**

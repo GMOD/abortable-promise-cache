@@ -1,10 +1,8 @@
+import { AbortController } from '../src/abortcontroller-ponyfill'
+
 import AbortablePromiseCache from '../src'
 
 jest.useFakeTimers()
-
-const {
-  AbortController,
-} = require('abortcontroller-polyfill/dist/cjs-ponyfill')
 
 const QuickLRU = require('quick-lru')
 
