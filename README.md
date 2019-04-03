@@ -19,9 +19,15 @@ in the cache.
 ## Usage
 
 ```js
+const QuickLRU = require('quick-lru')
 const AbortablePromiseCache = require('abortable-promise-cache')
 
 const cache = new AbortablePromiseCache({
+    // QuickLRU is a good backing cache to use, but you can use any
+    // cache as long as it supports `get`, `set`, `delete`, and `keys`.
+    cache: new QuickLRU({ maxSize: 1000 }),
+
+    // the `fill` callback will be called for a cache miss
     async fill(requestData, abortSignal) {
         // do some long-running thing
         return longRunningThing(requestData, abortSignal)
