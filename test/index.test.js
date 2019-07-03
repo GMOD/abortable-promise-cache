@@ -19,8 +19,9 @@ test('no aborting', async () => {
     cache: new QuickLRU({ maxSize: 2 }),
     async fill(data, signal) {
       await delay(30)
-      if (signal.aborted)
+      if (signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
 
       return 42
     },
@@ -36,8 +37,9 @@ test('arg check', async () => {
     cache: new QuickLRU({ maxSize: 2 }),
     async fill(data, signal) {
       await delay(30)
-      if (signal.aborted)
+      if (signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
 
       return 42
     },
@@ -55,8 +57,9 @@ test('simple abort', async () => {
     cache: new QuickLRU({ maxSize: 2 }),
     async fill(data, signal) {
       await delay(30)
-      if (signal.aborted)
+      if (signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
 
       return 42
     },

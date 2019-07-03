@@ -16,8 +16,9 @@ export default class AggregateAbortController {
    *  longer be abortable.
    */
   addSignal(signal = new NullSignal()) {
-    if (this.signal.aborted)
+    if (this.signal.aborted) {
       throw new Error('cannot add a signal, already aborted!')
+    }
 
     // note that a NullSignal will never fire, so if we
     // have one this thing will never actually abort
