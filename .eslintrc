@@ -1,14 +1,19 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@typescript-eslint/parser",
   "extends": [
-    "airbnb-base",
-    "prettier"
+    "prettier",
+    "plugin:prettier/recommended",
+    "plugin:@typescript-eslint/eslint-recommended"
   ],
   "plugins": [
     "prettier"
   ],
   "globals": {
     "__webpack_require__": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
   },
   "rules": {
     "prettier/prettier": [

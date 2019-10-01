@@ -1,14 +1,40 @@
+//@ts-ignore
 import { AbortSignal } from './abortcontroller-ponyfill'
 import AggregateAbortController from './AggregateAbortController'
 
-export default class AbortablePromiseCache {
+type Cache<U> = {
+  delete: (key: string) => void
+  keys: () => Iterator<string>
+  get: (key: string) => U
+  set: (key: string, val: U) => void
+  has: (key: string) => boolean
+}
+type FillCallback<T, U> = (data: T, signal: AbortSignal) => Promise<U>
+
+type Entry<U> = {
+  aborter: AggregateAbortController
+  settled: boolean
+  readonly aborted: boolean
+  promise: Promise<U>
+}
+export default class AbortablePromiseCache<T, U> {
   /**
    * @param {object} args constructor args
    * @param {Function} args.fill fill callback, will be called with sig `fill(data, signal)`
    * @param {object} args.cache backing store to use, must implement `get(key)`, `set(key, val)`,
    *   `delete(key)`, and `keys() -> iterator`
    */
-  constructor({ fill, cache }) {
+
+  private cache: Cache<Entry<U>>
+  private fillCallback: FillCallback<T, U>
+
+  constructor({
+    fill,
+    cache,
+  }: {
+    fill: FillCallback<T, U>
+    cache: Cache<Entry<U>>
+  }) {
     if (typeof fill !== 'function')
       throw new TypeError('must pass a fill function')
     if (typeof cache !== 'object')
@@ -26,11 +52,12 @@ export default class AbortablePromiseCache {
     this.fillCallback = fill
   }
 
-  static isAbortException(exception) {
+  static isAbortException(exception: Error) {
     return (
       // DOMException
       exception.name === 'AbortError' ||
       // standard-ish non-DOM abort exception
+      //@ts-ignore
       exception.code === 'ERR_ABORTED' ||
       // stringified DOMException
       exception.message === 'AbortError: aborted' ||
@@ -39,19 +66,20 @@ export default class AbortablePromiseCache {
     )
   }
 
-  evict(key, entry) {
+  evict(key: string, entry: Entry<U>) {
     if (this.cache.get(key) === entry) this.cache.delete(key)
   }
 
-  fill(key, data, signal) {
-    const newEntry = {
-      aborter: new AggregateAbortController(),
+  fill(key: string, data: T, signal: AbortSignal) {
+    const aborter = new AggregateAbortController()
+    const newEntry: Entry<U> = {
+      aborter: aborter,
+      promise: this.fillCallback(data, aborter.signal),
       settled: false,
       get aborted() {
         return this.aborter.signal.aborted
       },
     }
-    newEntry.promise = this.fillCallback(data, newEntry.aborter.signal)
     newEntry.aborter.addSignal(signal)
 
     // remove the fill from the cache when its abortcontroller fires, if still in there
@@ -83,7 +111,7 @@ export default class AbortablePromiseCache {
     this.cache.set(key, newEntry)
   }
 
-  static checkSinglePromise(promise, signal) {
+  static checkSinglePromise<U>(promise: Promise<U>, signal: AbortSignal) {
     // check just this signal for having been aborted, and abort the
     // promise if it was, regardless of what happened with the cached
     // response
@@ -109,7 +137,7 @@ export default class AbortablePromiseCache {
    * @param {any} data data passed as the first argument to the fill callback
    * @param {AbortSignal} [signal] optional AbortSignal object that aborts the request
    */
-  get(key, data, signal) {
+  get(key: string, data: T, signal: AbortSignal): Promise<U> {
     if (!signal && data instanceof AbortSignal)
       throw new TypeError(
         'second get argument appears to be an AbortSignal, perhaps you meant to pass `null` for the fill data?',
@@ -151,7 +179,7 @@ export default class AbortablePromiseCache {
    *
    * @param {any} key
    */
-  delete(key) {
+  delete(key: string) {
     const cachedEntry = this.cache.get(key)
     if (cachedEntry) {
       if (!cachedEntry.settled) cachedEntry.aborter.abort()
