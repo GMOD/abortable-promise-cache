@@ -24,7 +24,9 @@
     "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
-    "build": "babel src -d dist",
+    "build": "npm run build:types && npm run build:js",
+    "build:types": "tsc",
+    "build:js": "babel src -d dist",
     "watch": "npm-watch",
     "prepublishOnly": "npm run lint && npm test && npm run build",
     "postpublish": "git push origin master --follow-tags"
