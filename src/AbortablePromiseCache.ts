@@ -132,6 +132,10 @@ export default class AbortablePromiseCache<T, U> {
     )
   }
 
+  has(key: string): boolean {
+    return this.cache.has(key)
+  }
+
   /**
    * @param {any} key cache key to use for this request
    * @param {any} data data passed as the first argument to the fill callback
