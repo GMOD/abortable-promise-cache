@@ -20,7 +20,7 @@
     "test": "jest",
     "coverage": "npm test -- --coverage",
     "postcoverage": "opn coverage/lcov-report/index.html",
-    "lint": "eslint src test",
+    "lint": "tsc --noEmit",
     "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
