@@ -1,6 +1,6 @@
 {
   "name": "abortable-promise-cache",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "add AbortController support to a cache of async requests",
   "license": "MIT",
   "repository": "rbuels/abortable-promise-cache",
