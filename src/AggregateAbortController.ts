@@ -1,4 +1,3 @@
-//@ts-ignore
 import { AbortController, AbortSignal } from './abortcontroller-ponyfill'
 
 class NullSignal {}
@@ -16,6 +15,7 @@ export default class AggregateAbortController {
    *  will be treated as a null-signal, and this abortcontroller will no
    *  longer be abortable.
    */
+  //@ts-ignore
   addSignal(signal: AbortSignal = new NullSignal()): void {
     if (this.signal.aborted) {
       throw new Error('cannot add a signal, already aborted!')
