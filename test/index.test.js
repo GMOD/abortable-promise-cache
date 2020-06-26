@@ -370,3 +370,18 @@ test('clear can delete two', async () => {
   expect(cache.has('foo')).toBe(false)
   expect(cache.has('bar')).toBe(false)
 })
+
+test('not caching errors', async () => {
+  let i = 0
+  const cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 2 }),
+    async fill(data, { signal }) {
+      if (i++ === 0) {
+        throw new Error('first time')
+      } else return 42
+    },
+  })
+
+  await expect(cache.get('foo')).rejects.toEqual(new Error('first time'))
+  await expect(cache.get('foo')).resolves.toEqual(42)
+})
