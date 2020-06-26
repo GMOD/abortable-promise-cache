@@ -96,8 +96,7 @@ export default class AbortablePromiseCache<T, U> {
           newEntry.settled = true
 
           // if the fill throws an abort and is still in the cache, remove it
-          if (AbortablePromiseCache.isAbortException(exception))
-            this.evict(key, newEntry)
+          this.evict(key, newEntry)
         },
       )
       .catch(e => {
