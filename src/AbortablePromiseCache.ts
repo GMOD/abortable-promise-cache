@@ -78,10 +78,10 @@ export default class AbortablePromiseCache<T, U> {
   fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Function) {
     const aborter = new AggregateAbortController()
     const statusReporter = new AggregateStatusReporter()
+    statusReporter.addCallback(statusCallback)
     const newEntry: Entry<U> = {
       aborter: aborter,
       promise: this.fillCallback(data, aborter.signal, (message: unknown) => {
-        console.log({ wtf: 'wtf' })
         statusReporter.callback(message)
       }),
       settled: false,
@@ -91,7 +91,6 @@ export default class AbortablePromiseCache<T, U> {
       },
     }
     newEntry.aborter.addSignal(signal)
-    newEntry.statusReporter.addCallback(statusCallback)
 
     // remove the fill from the cache when its abortcontroller fires, if still in there
     newEntry.aborter.signal.addEventListener('abort', () => {
@@ -178,7 +177,6 @@ export default class AbortablePromiseCache<T, U> {
       // request is in-flight, add this signal to its list of signals,
       // or if there is no signal, the aborter will become non-abortable
       cacheEntry.aborter.addSignal(signal)
-
       cacheEntry.statusReporter.addCallback(statusCallback)
 
       return AbortablePromiseCache.checkSinglePromise(

@@ -376,9 +376,7 @@ test('not caching errors', async () => {
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
     async fill(data, { signal }) {
-      console.log('t1')
       await delay(30)
-      console.log('t2')
       if (i++ === 0) {
         throw new Error('first time')
       } else return 42
@@ -390,12 +388,11 @@ test('not caching errors', async () => {
 })
 
 test('status callback', async () => {
-  const aborter1 = new AbortController()
+  const aborter = new AbortController()
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
     async fill(data, signal, statusCallback) {
-      await delay(30)
-      console.log('here', data)
+      await delay(100)
       statusCallback('working...')
       return 'success'
     },
@@ -403,11 +400,31 @@ test('status callback', async () => {
 
   const s1 = jest.fn()
   const s2 = jest.fn()
+  const p1 = cache.get('foo', { testing: 'test1' }, aborter.signal, s1)
+  jest.runAllTimers()
+  const p2 = cache.get('foo', { testing: 'test2' }, aborter.signal, s2)
+  jest.runAllTimers()
 
-  const p1 = cache.get('foo', { testing: 'test1' }, aborter1.signal, s1)
-  //const p2 = cache.get('foo', { testing: 'test2' }, undefined, s2)
-  console.log('test2')
-  await p1 //await Promise.all([p1, p2])
+  await Promise.all([p1, p2])
+  jest.runAllTimers()
   expect(s1).toHaveBeenCalledWith('working...')
   expect(s2).toHaveBeenCalledWith('working...')
+})
+
+test('wtf', async () => {
+  const cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 2 }),
+    async fill(data, signal) {
+      await delay(30)
+      if (signal.aborted) {
+        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
+
+      return 42
+    },
+  })
+
+  const resultP = cache.get('foo')
+  jest.runAllTimers()
+  expect(await resultP).toBe(42)
 })
