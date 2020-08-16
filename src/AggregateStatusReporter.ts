@@ -6,7 +6,6 @@ export default class AggregateStatusReporter {
   }
 
   callback(message: unknown) {
-    console.log({ message, c: this.callbacks })
     this.callbacks.forEach(elt => {
       elt(message)
     })
