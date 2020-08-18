@@ -146,9 +146,17 @@ export default class AbortablePromiseCache<T, U> {
   }
 
   /**
+   * Callback for getting status of the pending async
+   *
+   * @callback statusCallback
+   * @param {any} status, current status string or message object
+   */
+
+  /**
    * @param {any} key cache key to use for this request
    * @param {any} data data passed as the first argument to the fill callback
    * @param {AbortSignal} [signal] optional AbortSignal object that aborts the request
+   * @param {statusCallback} a callback to get the current status of a pending async operation
    */
   get(
     key: string,
