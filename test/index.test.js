@@ -385,3 +385,25 @@ test('not caching errors', async () => {
   await expect(cache.get('foo')).rejects.toEqual(new Error('first time'))
   await expect(cache.get('foo')).resolves.toEqual(42)
 })
+
+test('status callback', async () => {
+  const aborter = new AbortController()
+  const cache = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 2 }),
+    async fill(data, signal, statusCallback) {
+      await delay(100)
+      statusCallback('working...')
+      return 'success'
+    },
+  })
+
+  const s1 = jest.fn()
+  const s2 = jest.fn()
+  const p1 = cache.get('foo', { testing: 'test1' }, aborter.signal, s1)
+  const p2 = cache.get('foo', { testing: 'test2' }, aborter.signal, s2)
+
+  jest.runAllTimers()
+  await Promise.all([p1, p2])
+  expect(s1).toHaveBeenCalledWith('working...')
+  expect(s2).toHaveBeenCalledWith('working...')
+})

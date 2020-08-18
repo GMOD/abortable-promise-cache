@@ -1,5 +1,6 @@
 import { AbortSignal } from './abortcontroller-ponyfill'
 import AggregateAbortController from './AggregateAbortController'
+import AggregateStatusReporter from './AggregateStatusReporter'
 
 type Cache<U> = {
   delete: (key: string) => void
@@ -8,12 +9,17 @@ type Cache<U> = {
   set: (key: string, val: U) => void
   has: (key: string) => boolean
 }
-type FillCallback<T, U> = (data: T, signal?: AbortSignal) => Promise<U>
+type FillCallback<T, U> = (
+  data: T,
+  signal?: AbortSignal,
+  statusCallback?: Function,
+) => Promise<U>
 
 type Entry<U> = {
   aborter: AggregateAbortController
   settled: boolean
   readonly aborted: boolean
+  statusReporter: AggregateStatusReporter
   promise: Promise<U>
 }
 export default class AbortablePromiseCache<T, U> {
@@ -69,12 +75,17 @@ export default class AbortablePromiseCache<T, U> {
     if (this.cache.get(key) === entry) this.cache.delete(key)
   }
 
-  fill(key: string, data: T, signal?: AbortSignal) {
+  fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Function) {
     const aborter = new AggregateAbortController()
+    const statusReporter = new AggregateStatusReporter()
+    statusReporter.addCallback(statusCallback)
     const newEntry: Entry<U> = {
       aborter: aborter,
-      promise: this.fillCallback(data, aborter.signal),
+      promise: this.fillCallback(data, aborter.signal, (message: unknown) => {
+        statusReporter.callback(message)
+      }),
       settled: false,
+      statusReporter,
       get aborted() {
         return this.aborter.signal.aborted
       },
@@ -135,11 +146,24 @@ export default class AbortablePromiseCache<T, U> {
   }
 
   /**
+   * Callback for getting status of the pending async
+   *
+   * @callback statusCallback
+   * @param {any} status, current status string or message object
+   */
+
+  /**
    * @param {any} key cache key to use for this request
    * @param {any} data data passed as the first argument to the fill callback
    * @param {AbortSignal} [signal] optional AbortSignal object that aborts the request
+   * @param {statusCallback} a callback to get the current status of a pending async operation
    */
-  get(key: string, data: T, signal?: AbortSignal): Promise<U> {
+  get(
+    key: string,
+    data: T,
+    signal?: AbortSignal,
+    statusCallback?: Function,
+  ): Promise<U> {
     if (!signal && data instanceof AbortSignal)
       throw new TypeError(
         'second get argument appears to be an AbortSignal, perhaps you meant to pass `null` for the fill data?',
@@ -150,16 +174,18 @@ export default class AbortablePromiseCache<T, U> {
       if (cacheEntry.aborted) {
         // if it's aborted but has not realized it yet, evict it and redispatch
         this.evict(key, cacheEntry)
-        return this.get(key, data, signal)
+        return this.get(key, data, signal, statusCallback)
       }
 
-      if (cacheEntry.settled)
+      if (cacheEntry.settled) {
         // too late to abort, just return it
         return cacheEntry.promise
+      }
 
       // request is in-flight, add this signal to its list of signals,
       // or if there is no signal, the aborter will become non-abortable
       cacheEntry.aborter.addSignal(signal)
+      cacheEntry.statusReporter.addCallback(statusCallback)
 
       return AbortablePromiseCache.checkSinglePromise(
         cacheEntry.promise,
@@ -168,7 +194,7 @@ export default class AbortablePromiseCache<T, U> {
     }
 
     // if we got here, it is not in the cache. fill.
-    this.fill(key, data, signal)
+    this.fill(key, data, signal, statusCallback)
     return AbortablePromiseCache.checkSinglePromise(
       this.cache.get(key).promise,
       signal,
