@@ -29,7 +29,7 @@
     "build:js": "babel src -d dist",
     "watch": "npm-watch",
     "prepublishOnly": "npm run lint && npm test && npm run build",
-    "postpublish": "git push origin master --follow-tags"
+    "postpublish": "git push --tags origin master"
   },
   "watch": {
     "test": "{src,test}/*.js",
