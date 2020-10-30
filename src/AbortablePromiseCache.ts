@@ -94,7 +94,9 @@ export default class AbortablePromiseCache<T, U> {
 
     // remove the fill from the cache when its abortcontroller fires, if still in there
     newEntry.aborter.signal.addEventListener('abort', () => {
-      this.evict(key, newEntry)
+      if (!newEntry.settled) {
+        this.evict(key, newEntry)
+      }
     })
 
     // chain off the cached promise to record when it settles
