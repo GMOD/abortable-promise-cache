@@ -173,7 +173,7 @@ export default class AbortablePromiseCache<T, U> {
     const cacheEntry = this.cache.get(key)
 
     if (cacheEntry) {
-      if (cacheEntry.aborted) {
+      if (cacheEntry.aborted && !cacheEntry.settled) {
         // if it's aborted but has not realized it yet, evict it and redispatch
         this.evict(key, cacheEntry)
         return this.get(key, data, signal, statusCallback)
