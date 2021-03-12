@@ -26,7 +26,7 @@
     "prebuild": "npm run clean",
     "build": "npm run build:types && npm run build:js",
     "build:types": "tsc",
-    "build:js": "babel src -d dist",
+    "build:js": "babel src -d dist --extensions \".ts,.tsx\"",
     "watch": "npm-watch",
     "prepublishOnly": "npm run lint && npm test && npm run build",
     "postpublish": "git push --tags origin master"
