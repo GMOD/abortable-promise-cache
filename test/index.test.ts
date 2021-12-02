@@ -1,9 +1,11 @@
+//@ts-nocheck
 import { AbortController } from '../src/abortcontroller-ponyfill'
 
 import AbortablePromiseCache from '../src'
 
 jest.useFakeTimers()
 
+//eslint-disable-next-line @typescript-eslint/no-var-requires
 const QuickLRU = require('quick-lru')
 
 function delay(ms) {
@@ -375,10 +377,12 @@ test('not caching errors', async () => {
   let i = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill(data, { signal }) {
+    async fill() {
       if (i++ === 0) {
         throw new Error('first time')
-      } else return 42
+      } else {
+        return 42
+      }
     },
   })
 
