@@ -5,6 +5,7 @@
   "license": "MIT",
   "repository": "rbuels/abortable-promise-cache",
   "main": "dist/index.js",
+  "module": "esm/index.js",
   "author": {
     "name": "Robert Buels",
     "email": "rbuels@gmail.com",
@@ -14,7 +15,8 @@
     "node": ">=6"
   },
   "files": [
-    "dist"
+    "dist",
+    "esm"
   ],
   "scripts": {
     "test": "jest",
@@ -22,7 +24,7 @@
     "postcoverage": "opn coverage/lcov-report/index.html",
     "lint": "eslint src test",
     "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist esm",
     "prebuild": "npm run clean",
     "build": "tsc --target es2018 --outDir esm && tsc --target es5 --outDir dist",
     "watch": "npm-watch",
