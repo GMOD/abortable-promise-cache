@@ -40,18 +40,21 @@ export default class AbortablePromiseCache<T, U> {
     fill: FillCallback<T, U>
     cache: Cache<Entry<U>>
   }) {
-    if (typeof fill !== 'function')
+    if (typeof fill !== 'function') {
       throw new TypeError('must pass a fill function')
-    if (typeof cache !== 'object')
+    }
+    if (typeof cache !== 'object') {
       throw new TypeError('must pass a cache object')
+    }
     if (
       typeof cache.get !== 'function' ||
       typeof cache.set !== 'function' ||
       typeof cache.delete !== 'function'
-    )
+    ) {
       throw new TypeError(
         'cache must implement get(key), set(key, val), and and delete(key)',
       )
+    }
 
     this.cache = cache
     this.fillCallback = fill
@@ -72,7 +75,9 @@ export default class AbortablePromiseCache<T, U> {
   }
 
   evict(key: string, entry: Entry<U>) {
-    if (this.cache.get(key) === entry) this.cache.delete(key)
+    if (this.cache.get(key) === entry) {
+      this.cache.delete(key)
+    }
   }
 
   fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Function) {
@@ -105,7 +110,7 @@ export default class AbortablePromiseCache<T, U> {
         () => {
           newEntry.settled = true
         },
-        exception => {
+        () => {
           newEntry.settled = true
 
           // if the fill throws an error (including abort) and is still in the cache, remove it
@@ -127,8 +132,9 @@ export default class AbortablePromiseCache<T, U> {
     // promise if it was, regardless of what happened with the cached
     // response
     function checkForSingleAbort() {
-      if (signal && signal.aborted)
+      if (signal && signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
     }
 
     return promise.then(
@@ -166,10 +172,11 @@ export default class AbortablePromiseCache<T, U> {
     signal?: AbortSignal,
     statusCallback?: Function,
   ): Promise<U> {
-    if (!signal && data instanceof AbortSignal)
+    if (!signal && data instanceof AbortSignal) {
       throw new TypeError(
         'second get argument appears to be an AbortSignal, perhaps you meant to pass `null` for the fill data?',
       )
+    }
     const cacheEntry = this.cache.get(key)
 
     if (cacheEntry) {
@@ -212,7 +219,9 @@ export default class AbortablePromiseCache<T, U> {
   delete(key: string) {
     const cachedEntry = this.cache.get(key)
     if (cachedEntry) {
-      if (!cachedEntry.settled) cachedEntry.aborter.abort()
+      if (!cachedEntry.settled) {
+        cachedEntry.aborter.abort()
+      }
       this.cache.delete(key)
     }
   }
