@@ -5,7 +5,7 @@ import AggregateStatusReporter from './AggregateStatusReporter'
 type Cache<U> = {
   delete: (key: string) => void
   keys: () => Iterator<string>
-  get: (key: string) => U
+  get: (key: string) => U | undefined
   set: (key: string, val: U) => void
   has: (key: string) => boolean
 }
@@ -198,7 +198,7 @@ export default class AbortablePromiseCache<T, U> {
     // if we got here, it is not in the cache. fill.
     this.fill(key, data, signal, statusCallback)
     return AbortablePromiseCache.checkSinglePromise(
-      this.cache.get(key).promise,
+      this.cache.get(key)!.promise,
       signal,
     )
   }
