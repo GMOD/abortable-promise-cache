@@ -205,6 +205,8 @@ export default class AbortablePromiseCache<T, U> {
     // if we got here, it is not in the cache. fill.
     this.fill(key, data, signal, statusCallback)
     return AbortablePromiseCache.checkSinglePromise(
+      //see https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#non-null-assertion-operator-postfix-
+      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.cache.get(key)!.promise,
       signal,
     )
