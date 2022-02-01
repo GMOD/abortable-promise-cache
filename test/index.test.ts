@@ -171,10 +171,10 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
   aborter2.abort()
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   jest.runAllTimers()
-  expect(callCount).toBe(1)
-  expect(which).toBe(1)
   await expect(resultP2).rejects.toThrow(/aborted/)
   await expect(resultP1).rejects.toThrow(/aborted/)
+  expect(callCount).toBe(2)
+  expect(which).toBe(2)
   expect(fillAborted).toBe(true)
 })
 
