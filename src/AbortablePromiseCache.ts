@@ -112,9 +112,9 @@ export default class AbortablePromiseCache<T, U> {
 
     // remove the fill from the cache when its abortcontroller fires, if still in there
     newEntry.aborter.signal.addEventListener('abort', () => {
-      // if (!newEntry.settled) {
-      //   this.evict(key, newEntry)
-      // }
+      if (!newEntry.settled) {
+        this.evict(key, newEntry)
+      }
     })
     this.cache.set(key, newEntry)
   }
@@ -123,15 +123,22 @@ export default class AbortablePromiseCache<T, U> {
     // check just this signal for having been aborted, and abort the
     // promise if it was, regardless of what happened with the cached
     // response
-    // function checkForSingleAbort<T>(arg: T) {
-    //   // if (signal?.aborted) {
-    //   //   console.log('wowowow!!')
-    //   //   throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
-    //   // }
-    //   return arg
-    // }
+    function checkForSingleAbort() {
+      if (signal?.aborted) {
+        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      }
+    }
 
-    return promise
+    return promise.then(
+      result => {
+        checkForSingleAbort()
+        return result
+      },
+      error => {
+        checkForSingleAbort()
+        throw error
+      },
+    )
   }
 
   has(key: string): boolean {
@@ -188,12 +195,18 @@ export default class AbortablePromiseCache<T, U> {
       cacheEntry.aborter.addSignal(signal)
       cacheEntry.statusReporter.addCallback(statusCallback)
 
-      return cacheEntry.promise
+      return AbortablePromiseCache.checkSinglePromise(
+        cacheEntry.promise,
+        signal,
+      )
     }
 
     // if we got here, it is not in the cache. fill.
     this.fill(key, data, signal, statusCallback)
-    return this.cache.get(key)!.promise
+    return AbortablePromiseCache.checkSinglePromise(
+      this.cache.get(key)!.promise,
+      signal,
+    )
   }
 
   /**
