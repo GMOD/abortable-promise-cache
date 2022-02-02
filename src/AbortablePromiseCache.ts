@@ -84,11 +84,24 @@ export default class AbortablePromiseCache<T, U> {
     const aborter = new AggregateAbortController()
     const statusReporter = new AggregateStatusReporter()
     statusReporter.addCallback(statusCallback)
-    const newEntry: Entry<U> = {
+    const newEntry = {
       aborter: aborter,
       promise: this.fillCallback(data, aborter.signal, (message: unknown) => {
         statusReporter.callback(message)
-      }),
+      })
+        .then(arg => {
+          newEntry.settled = true
+          return arg
+        })
+        .catch(e => {
+          // console.log('ERRR', e)
+          newEntry.settled = true
+
+          // if the fill throws an error (including abort) and is still in the
+          // cache, remove it
+          this.evict(key, newEntry)
+          throw e
+        }),
       settled: false,
       statusReporter,
       get aborted() {
@@ -99,31 +112,10 @@ export default class AbortablePromiseCache<T, U> {
 
     // remove the fill from the cache when its abortcontroller fires, if still in there
     newEntry.aborter.signal.addEventListener('abort', () => {
-      if (!newEntry.settled) {
-        this.evict(key, newEntry)
-      }
+      // if (!newEntry.settled) {
+      //   this.evict(key, newEntry)
+      // }
     })
-
-    // chain off the cached promise to record when it settles
-    newEntry.promise
-      .then(
-        () => {
-          newEntry.settled = true
-        },
-        () => {
-          newEntry.settled = true
-
-          // if the fill throws an error (including abort) and is still in the cache, remove it
-          this.evict(key, newEntry)
-        },
-      )
-      .catch(e => {
-        // this will only be reached if there is some kind of
-        // bad bug in this library
-        console.error(e)
-        throw e
-      })
-
     this.cache.set(key, newEntry)
   }
 
@@ -131,22 +123,15 @@ export default class AbortablePromiseCache<T, U> {
     // check just this signal for having been aborted, and abort the
     // promise if it was, regardless of what happened with the cached
     // response
-    function checkForSingleAbort() {
-      if (signal && signal.aborted) {
-        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
-      }
-    }
+    // function checkForSingleAbort<T>(arg: T) {
+    //   // if (signal?.aborted) {
+    //   //   console.log('wowowow!!')
+    //   //   throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+    //   // }
+    //   return arg
+    // }
 
-    return promise.then(
-      result => {
-        checkForSingleAbort()
-        return result
-      },
-      error => {
-        checkForSingleAbort()
-        throw error
-      },
-    )
+    return promise
   }
 
   has(key: string): boolean {
@@ -177,6 +162,13 @@ export default class AbortablePromiseCache<T, U> {
         'second get argument appears to be an AbortSignal, perhaps you meant to pass `null` for the fill data?',
       )
     }
+
+    //check pre-aborted
+    if (signal?.aborted) {
+      return new Promise(() => {
+        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
+      })
+    }
     const cacheEntry = this.cache.get(key)
 
     if (cacheEntry) {
@@ -196,20 +188,12 @@ export default class AbortablePromiseCache<T, U> {
       cacheEntry.aborter.addSignal(signal)
       cacheEntry.statusReporter.addCallback(statusCallback)
 
-      return AbortablePromiseCache.checkSinglePromise(
-        cacheEntry.promise,
-        signal,
-      )
+      return cacheEntry.promise
     }
 
     // if we got here, it is not in the cache. fill.
     this.fill(key, data, signal, statusCallback)
-    return AbortablePromiseCache.checkSinglePromise(
-      //see https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#non-null-assertion-operator-postfix-
-      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.cache.get(key)!.promise,
-      signal,
-    )
+    return this.cache.get(key)!.promise
   }
 
   /**
