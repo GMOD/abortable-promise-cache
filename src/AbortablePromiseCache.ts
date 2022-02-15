@@ -84,24 +84,11 @@ export default class AbortablePromiseCache<T, U> {
     const aborter = new AggregateAbortController()
     const statusReporter = new AggregateStatusReporter()
     statusReporter.addCallback(statusCallback)
-    const newEntry = {
+    const newEntry: Entry<U> = {
       aborter: aborter,
       promise: this.fillCallback(data, aborter.signal, (message: unknown) => {
         statusReporter.callback(message)
-      })
-        .then(arg => {
-          newEntry.settled = true
-          return arg
-        })
-        .catch(e => {
-          // console.log('ERRR', e)
-          newEntry.settled = true
-
-          // if the fill throws an error (including abort) and is still in the
-          // cache, remove it
-          this.evict(key, newEntry)
-          throw e
-        }),
+      }),
       settled: false,
       statusReporter,
       get aborted() {
@@ -116,6 +103,27 @@ export default class AbortablePromiseCache<T, U> {
         this.evict(key, newEntry)
       }
     })
+
+    // chain off the cached promise to record when it settles
+    newEntry.promise
+      .then(
+        () => {
+          newEntry.settled = true
+        },
+        () => {
+          newEntry.settled = true
+
+          // if the fill throws an error (including abort) and is still in the cache, remove it
+          this.evict(key, newEntry)
+        },
+      )
+      .catch(e => {
+        // this will only be reached if there is some kind of
+        // bad bug in this library
+        console.error(e)
+        throw e
+      })
+
     this.cache.set(key, newEntry)
   }
 
@@ -124,7 +132,7 @@ export default class AbortablePromiseCache<T, U> {
     // promise if it was, regardless of what happened with the cached
     // response
     function checkForSingleAbort() {
-      if (signal?.aborted) {
+      if (signal && signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
       }
     }
@@ -168,13 +176,6 @@ export default class AbortablePromiseCache<T, U> {
       throw new TypeError(
         'second get argument appears to be an AbortSignal, perhaps you meant to pass `null` for the fill data?',
       )
-    }
-
-    //check pre-aborted
-    if (signal?.aborted) {
-      return new Promise(() => {
-        throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
-      })
     }
     const cacheEntry = this.cache.get(key)
 
