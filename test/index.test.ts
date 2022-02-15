@@ -147,6 +147,7 @@ test('cache 2 requests, both aborted, and fill aborted', async () => {
 test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async () => {
   let callCount = 0
   let which = 0
+  let finishedCount = 0
   let fillAborted = false
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
@@ -159,6 +160,7 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
       }
 
+      finishedCount += 1
       return 42
     },
   })
@@ -167,12 +169,13 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
   jest.advanceTimersByTime(10)
   const aborter2 = new AbortController()
-  aborter1.abort()
-  aborter2.abort()
+  aborter1.abort() //< this aborts call 1 before it finishes, and also makes it get evicted from the cache
+  aborter2.abort() //< we abort call 2 before we even start it
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   jest.runAllTimers()
-  expect(callCount).toBe(1)
-  expect(which).toBe(1)
+  expect(callCount).toBe(2)
+  expect(which).toBe(2)
+  expect(finishedCount).toBe(0)
   await expect(resultP2).rejects.toThrow(/aborted/)
   await expect(resultP1).rejects.toThrow(/aborted/)
   expect(fillAborted).toBe(true)
