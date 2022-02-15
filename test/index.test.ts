@@ -169,7 +169,7 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
   jest.advanceTimersByTime(10)
   const aborter2 = new AbortController()
-  aborter1.abort() //< this aborts call 1 before it finishes and it's evicted from the cache
+  aborter1.abort() //< this aborts call 1 before it finishes, and also makes it get evicted from the cache
   aborter2.abort() //< we abort call 2 before we even start it
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   jest.runAllTimers()
