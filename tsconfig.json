@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "lib": ["es2017", "es7", "es6", "dom"],
+    "target": "es2018",
     "declaration": true,
     "outDir": "dist",
+    "moduleResolution": "node",
     "strict": true,
     "sourceMap": true,
     "esModuleInterop": true
