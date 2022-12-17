@@ -2,15 +2,17 @@
 
 [![NPM version](https://img.shields.io/npm/v/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
 [![Coverage Status](https://img.shields.io/codecov/c/github/rbuels/abortable-promise-cache/master.svg?style=flat-square)](https://codecov.io/gh/rbuels/abortable-promise-cache/branch/master)
-[![Build Status](https://travis-ci.com/rbuels/abortable-promise-cache.svg?branch=master)](https://travis-ci.com/rbuels/abortable-promise-cache)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/GMOD/abortable-promise-cache/push.yml?branch=master)](https://github.com/GMOD/abortable-promise-cache/actions)
 
-Adds AbortController/AbortSignal semantics to a cache of promises. Each `get` from the cache can optionally take an `AbortSignal` object that lets that request be aborted.
+Adds AbortController/AbortSignal semantics to a cache of promises. Each `get`
+from the cache can optionally take an `AbortSignal` object that lets that
+request be aborted.
 
-Cached fill requests will be aborted and evicted from the cache if all the incoming requests for it
-are aborted before the promise settles.
+Cached fill requests will be aborted and evicted from the cache if all the
+incoming requests for it are aborted before the promise settles.
 
-If the fill request has already settled before all the requests for it have been aborted, it will stay
-in the cache.
+If the fill request has already settled before all the requests for it have been
+aborted, it will stay in the cache.
 
 ## Install
 
@@ -23,15 +25,15 @@ import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from 'quick-lru'
 
 const cache = new AbortablePromiseCache({
-    // QuickLRU is a good backing cache to use, but you can use any
-    // cache as long as it supports `get`, `set`, `delete`, and `keys`.
-    cache: new QuickLRU({ maxSize: 1000 }),
+  // QuickLRU is a good backing cache to use, but you can use any
+  // cache as long as it supports `get`, `set`, `delete`, and `keys`.
+  cache: new QuickLRU({ maxSize: 1000 }),
 
-    // the `fill` callback will be called for a cache miss
-    async fill(requestData, abortSignal) {
-        // do some long-running thing
-        return longRunningThing(requestData, abortSignal)
-    }
+  // the `fill` callback will be called for a cache miss
+  async fill(requestData, abortSignal) {
+    // do some long-running thing
+    return longRunningThing(requestData, abortSignal)
+  },
 })
 
 // Make a cached request. The returned promise will abort with the given abort signal if
@@ -52,46 +54,57 @@ cache.clear()
 
 #### Table of Contents
 
--   [constructor](#constructor)
--   [get](#get)
--   [delete](#delete)
--   [clear](#clear)
+- [constructor](#constructor)
+- [get](#get)
+- [delete](#delete)
+- [clear](#clear)
 
 ### constructor
 
 **Parameters**
 
--   `args` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** constructor args
-    -   `args.fill` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** fill callback, will be called with sig `fill(data, signal)`
-    -   `args.cache` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** backing store to use, must implement `get(key)`, `set(key, val)`,
-          `delete(key)`, and `keys() -> iterator`
+- `args`
+  **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**
+  constructor args
+  - `args.fill`
+    **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)**
+    fill callback, will be called with sig `fill(data, signal)`
+  - `args.cache`
+    **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**
+    backing store to use, must implement `get(key)`, `set(key, val)`,
+    `delete(key)`, and `keys() -> iterator`
 
 ### get
 
 **Parameters**
 
--   `key` **any** cache key to use for this request
--   `data` **any** data passed as the first argument to the fill callback
--   `signal` **AbortSignal?** optional AbortSignal object that aborts the request
+- `key` **any** cache key to use for this request
+- `data` **any** data passed as the first argument to the fill callback
+- `signal` **AbortSignal?** optional AbortSignal object that aborts the request
 
 ### delete
 
-delete the given entry from the cache. if it exists and its fill request has
-not yet settled, the fill will be signaled to abort.
+delete the given entry from the cache. if it exists and its fill request has not
+yet settled, the fill will be signaled to abort.
 
 **Parameters**
 
--   `key` **any** 
+- `key` **any**
 
 ### clear
 
 Clear all requests from the cache. Aborts any that have not settled.
 
-Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** count of entries deleted
+Returns
+**[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)**
+count of entries deleted
 
 ## Academic Use
 
-This package was written with funding from the [NHGRI](http://genome.gov) as part of the [JBrowse](http://jbrowse.org) project. If you use it in an academic project that you publish, please cite the most recent JBrowse paper, which will be linked from [jbrowse.org](http://jbrowse.org).
+This package was written with funding from the [NHGRI](http://genome.gov) as
+part of the [JBrowse](http://jbrowse.org) project. If you use it in an academic
+project that you publish, please cite the most recent JBrowse paper, which will
+be linked from [jbrowse.org](http://jbrowse.org).
 
 ## License
 
