@@ -1,3 +1,8 @@
+# v1.5.1
+
+- Update esm bundle
+- Update README
+
 # v1.5.0
 
 - Add esm bundle
