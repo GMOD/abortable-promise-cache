@@ -31,7 +31,7 @@
     "build:es5": "tsc --module commonjs --outDir dist",
     "build": "npm run build:esm && npm run build:es5",
     "prepublishOnly": "npm run lint && npm test && npm run build",
-    "postpublish": "git push --tags origin master"
+    "postversion": "git push --follow-tags"
   },
   "keywords": [],
   "dependencies": {
