@@ -29,6 +29,9 @@
     "prepublishOnly": "npm run lint && npm test && npm run build",
     "postversion": "git push --follow-tags"
   },
+  "dependencies": {
+    "lru-cache": "^10.2.2"
+  },
   "devDependencies": {
     "@types/node": "^20.14.11",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
