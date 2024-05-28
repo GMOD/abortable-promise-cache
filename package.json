@@ -35,7 +35,8 @@
   },
   "keywords": [],
   "dependencies": {
-    "abortcontroller-polyfill": "^1.2.9"
+    "abortcontroller-polyfill": "^1.2.9",
+    "lru-cache": "^10.2.2"
   },
   "devDependencies": {
     "@types/jest": "^29.2.4",
