@@ -9,8 +9,8 @@ export default class AggregateStatusReporter {
 
   callback(message: unknown) {
     this.currentMessage = message
-    this.callbacks.forEach(elt => {
+    for (const elt of this.callbacks) {
       elt(message)
-    })
+    }
   }
 }

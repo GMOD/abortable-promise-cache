@@ -1,12 +1,11 @@
-import { AbortSignal } from './abortcontroller-ponyfill'
 import AggregateAbortController from './AggregateAbortController'
 import AggregateStatusReporter from './AggregateStatusReporter'
 
-type Cache<U> = {
+interface Cache<U> {
   delete: (key: string) => void
   keys: () => Iterator<string>
   get: (key: string) => U | undefined
-  set: (key: string, val: U) => void
+  set: (key: string, value: U) => void
   has: (key: string) => boolean
 }
 type FillCallback<T, U> = (
@@ -15,7 +14,7 @@ type FillCallback<T, U> = (
   statusCallback?: Function,
 ) => Promise<U>
 
-type Entry<U> = {
+interface Entry<U> {
   aborter: AggregateAbortController
   settled: boolean
   readonly aborted: boolean
@@ -117,11 +116,11 @@ export default class AbortablePromiseCache<T, U> {
           this.evict(key, newEntry)
         },
       )
-      .catch(e => {
+      .catch(error => {
         // this will only be reached if there is some kind of
         // bad bug in this library
-        console.error(e)
-        throw e
+        console.error(error)
+        throw error
       })
 
     this.cache.set(key, newEntry)
@@ -132,7 +131,7 @@ export default class AbortablePromiseCache<T, U> {
     // promise if it was, regardless of what happened with the cached
     // response
     function checkForSingleAbort() {
-      if (signal && signal.aborted) {
+      if (signal?.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
       }
     }
@@ -206,7 +205,7 @@ export default class AbortablePromiseCache<T, U> {
     this.fill(key, data, signal, statusCallback)
     return AbortablePromiseCache.checkSinglePromise(
       //see https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#non-null-assertion-operator-postfix-
-      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       this.cache.get(key)!.promise,
       signal,
     )

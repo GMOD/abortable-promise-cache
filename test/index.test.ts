@@ -1,14 +1,11 @@
 //@ts-nocheck
-import { AbortController } from '../src/abortcontroller-ponyfill'
+import QuickLRU from 'quick-lru'
 
 import AbortablePromiseCache from '../src'
 
 jest.useFakeTimers()
 
-//eslint-disable-next-line @typescript-eslint/no-var-requires
-const QuickLRU = require('quick-lru')
-
-function delay(ms) {
+function delay(ms: number) {
   return new Promise(r => setTimeout(r, ms))
 }
 
@@ -49,6 +46,7 @@ test('arg check', async () => {
 
   const aborter = new AbortController()
   expect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     cache.get('foo', aborter.signal)
     aborter.abort()
   }).toThrow(/perhaps you meant/)
@@ -80,7 +78,7 @@ test('cache 2 requests, one aborted', async () => {
   let fillAborted = false
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -116,7 +114,7 @@ test('cache 2 requests, both aborted, and fill aborted', async () => {
   let fillAborted = false
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -151,7 +149,7 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
   let fillAborted = false
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -187,7 +185,7 @@ test('cache 2 requests, abort one and wait for it, then make another and check t
   let abortCount = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -222,7 +220,7 @@ test('cache 3 requests, 2 aborted, but fill and last request did not abort', asy
   let fillAborted = false
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -259,7 +257,7 @@ test('deleting aborts', async () => {
   let abortCount = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -289,7 +287,7 @@ test('clear can delete zero', async () => {
   let abortCount = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -313,7 +311,7 @@ test('clear can delete one', async () => {
   let abortCount = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -343,7 +341,7 @@ test('clear can delete two', async () => {
   let abortCount = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
-    async fill({ whichCall }, signal) {
+    async fill({ whichCall }: { whichCall: number }, signal) {
       callCount += 1
       which = whichCall
       await delay(30)
@@ -377,11 +375,11 @@ test('clear can delete two', async () => {
 })
 
 test('not caching errors', async () => {
-  let i = 0
+  let index = 0
   const cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 2 }),
     async fill() {
-      if (i++ === 0) {
+      if (index++ === 0) {
         throw new Error('first time')
       } else {
         return 42

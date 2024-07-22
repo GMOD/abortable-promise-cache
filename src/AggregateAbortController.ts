@@ -1,5 +1,3 @@
-import { AbortController, AbortSignal } from './abortcontroller-ponyfill'
-
 class NullSignal {}
 
 /**
