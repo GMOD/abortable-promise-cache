@@ -1,3 +1,8 @@
+# v2.0.1
+
+- Renamed to @gmod/abortable-promise-cache
+- Removed AbortSignal/AbortController poly/ponyfill
+
 # v1.5.1
 
 - Update esm bundle
