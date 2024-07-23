@@ -8,16 +8,13 @@
 - Add esm bundle
 - Fix typescript definition of .get() to return undefined|T
 
-
 # v1.4.0
 
 - Only evict if not already settled
 
 # v1.3.0
 
-
 - Add statusCallback
-
 
 # v1.2.0
 
@@ -30,7 +27,6 @@
 # v1.1.2
 
 - Fix typescript declaration on abortsignal ponyfill
-
 
 # v1.1.1
 
