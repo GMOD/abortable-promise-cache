@@ -1,7 +1,6 @@
-# abortable-promise-cache
+# @gmod/abortable-promise-cache
 
-[![NPM version](https://img.shields.io/npm/v/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
-[![Coverage Status](https://img.shields.io/codecov/c/github/rbuels/abortable-promise-cache/master.svg?style=flat-square)](https://codecov.io/gh/rbuels/abortable-promise-cache/branch/master)
+[![NPM version](https://img.shields.io/npm/v/@gmod/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/GMOD/abortable-promise-cache/push.yml?branch=master)](https://github.com/GMOD/abortable-promise-cache/actions)
 
 Adds AbortController/AbortSignal semantics to a cache of promises. Each `get`
@@ -16,12 +15,12 @@ aborted, it will stay in the cache.
 
 ## Install
 
-    $ npm install --save abortable-promise-cache
+    $ npm install --save @gmod/abortable-promise-cache
 
 ## Usage
 
 ```js
-import AbortablePromiseCache from 'abortable-promise-cache'
+import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import QuickLRU from 'quick-lru'
 
 const cache = new AbortablePromiseCache({
