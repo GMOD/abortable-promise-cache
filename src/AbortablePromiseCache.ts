@@ -1,6 +1,8 @@
 import AggregateAbortController from './AggregateAbortController'
 import AggregateStatusReporter from './AggregateStatusReporter'
 
+type Callback = (arg: unknown) => void
+
 interface Cache<U> {
   delete: (key: string) => void
   keys: () => Iterator<string>
@@ -11,7 +13,7 @@ interface Cache<U> {
 type FillCallback<T, U> = (
   data: T,
   signal?: AbortSignal,
-  statusCallback?: Function,
+  statusCallback?: Callback,
 ) => Promise<U>
 
 interface Entry<U> {
@@ -79,7 +81,7 @@ export default class AbortablePromiseCache<T, U> {
     }
   }
 
-  fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Function) {
+  fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Callback) {
     const aborter = new AggregateAbortController()
     const statusReporter = new AggregateStatusReporter()
     statusReporter.addCallback(statusCallback)
@@ -116,7 +118,7 @@ export default class AbortablePromiseCache<T, U> {
           this.evict(key, newEntry)
         },
       )
-      .catch(error => {
+      .catch((error: unknown) => {
         // this will only be reached if there is some kind of
         // bad bug in this library
         console.error(error)
@@ -141,7 +143,7 @@ export default class AbortablePromiseCache<T, U> {
         checkForSingleAbort()
         return result
       },
-      error => {
+      (error: unknown) => {
         checkForSingleAbort()
         throw error
       },
@@ -169,7 +171,7 @@ export default class AbortablePromiseCache<T, U> {
     key: string,
     data: T,
     signal?: AbortSignal,
-    statusCallback?: Function,
+    statusCallback?: Callback,
   ): Promise<U> {
     if (!signal && data instanceof AbortSignal) {
       throw new TypeError(
@@ -204,8 +206,7 @@ export default class AbortablePromiseCache<T, U> {
     // if we got here, it is not in the cache. fill.
     this.fill(key, data, signal, statusCallback)
     return AbortablePromiseCache.checkSinglePromise(
-      //see https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#non-null-assertion-operator-postfix-
-
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.cache.get(key)!.promise,
       signal,
     )

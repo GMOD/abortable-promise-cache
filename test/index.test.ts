@@ -1,16 +1,17 @@
 //@ts-nocheck
+import { vi, expect, test, beforeEach } from 'vitest'
 import QuickLRU from 'quick-lru'
 
 import AbortablePromiseCache from '../src'
 
-jest.useFakeTimers()
+vi.useFakeTimers()
 
 function delay(ms: number) {
   return new Promise(r => setTimeout(r, ms))
 }
 
 beforeEach(() => {
-  jest.useFakeTimers()
+  vi.useFakeTimers()
 })
 
 test('no aborting', async () => {
@@ -27,7 +28,7 @@ test('no aborting', async () => {
   })
 
   const resultP = cache.get('foo')
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(await resultP).toBe(42)
 })
 
@@ -68,7 +69,7 @@ test('simple abort', async () => {
   const aborter = new AbortController()
   const resultP = cache.get('foo', null, aborter.signal)
   aborter.abort()
-  jest.runAllTimers()
+  vi.runAllTimers()
   await expect(resultP).rejects.toThrow(/aborted/)
 })
 
@@ -93,11 +94,11 @@ test('cache 2 requests, one aborted', async () => {
 
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   const aborter2 = new AbortController()
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   aborter1.abort()
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(1)
   expect(which).toBe(1)
   expect(await resultP2).toBe(42)
@@ -129,12 +130,12 @@ test('cache 2 requests, both aborted, and fill aborted', async () => {
 
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   const aborter2 = new AbortController()
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   aborter1.abort()
   aborter2.abort()
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(1)
   expect(which).toBe(1)
   await expect(resultP2).rejects.toThrow(/aborted/)
@@ -165,12 +166,12 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
 
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   const aborter2 = new AbortController()
   aborter1.abort() //< this aborts call 1 before it finishes, and also makes it get evicted from the cache
   aborter2.abort() //< we abort call 2 before we even start it
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(2)
   expect(which).toBe(2)
   expect(finishedCount).toBe(0)
@@ -201,14 +202,14 @@ test('cache 2 requests, abort one and wait for it, then make another and check t
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
   aborter1.abort()
-  jest.runAllTimers()
+  vi.runAllTimers()
   await expect(resultP1).rejects.toThrow(/aborted/)
   expect(callCount).toBe(1)
   expect(abortCount).toBe(1)
   expect(which).toBe(1)
   const aborter2 = new AbortController()
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(2)
   expect(which).toBe(2)
   expect(await resultP2).toBe(42)
@@ -235,14 +236,14 @@ test('cache 3 requests, 2 aborted, but fill and last request did not abort', asy
 
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   const aborter2 = new AbortController()
   const resultP2 = cache.get('foo', { whichCall: 2 }, aborter2.signal)
   const aborter3 = new AbortController()
   const resultP3 = cache.get('foo', { whichCall: 3 }, aborter3.signal)
   aborter1.abort()
   aborter2.abort()
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(1)
   expect(which).toBe(1)
   await expect(resultP2).rejects.toThrow(/aborted/)
@@ -271,12 +272,12 @@ test('deleting aborts', async () => {
   })
 
   const resultP1 = cache.get('foo', { whichCall: 1 })
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   cache.delete('foo')
   expect(callCount).toBe(1)
   expect(which).toBe(1)
   expect(abortCount).toBe(0)
-  jest.runAllTimers()
+  vi.runAllTimers()
   await expect(resultP1).rejects.toThrow(/aborted/)
   expect(abortCount).toBe(1)
 })
@@ -325,12 +326,12 @@ test('clear can delete one', async () => {
   })
 
   const resultP1 = cache.get('foo', { whichCall: 1 })
-  jest.advanceTimersByTime(10)
+  vi.advanceTimersByTime(10)
   expect(cache.clear()).toBe(1)
   expect(callCount).toBe(1)
   expect(which).toBe(1)
   expect(abortCount).toBe(0)
-  jest.runAllTimers()
+  vi.runAllTimers()
   await expect(resultP1).rejects.toThrow(/aborted/)
   expect(abortCount).toBe(1)
 })
@@ -357,7 +358,7 @@ test('clear can delete two', async () => {
   const aborter1 = new AbortController()
   const resultP1 = cache.get('foo', { whichCall: 1 }, aborter1.signal)
   expect(cache.has('foo')).toBe(true)
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(await resultP1).toBe(42)
   expect(callCount).toBe(1)
   expect(abortCount).toBe(0)
@@ -365,7 +366,7 @@ test('clear can delete two', async () => {
   const aborter2 = new AbortController()
   const resultP2 = cache.get('bar', { whichCall: 2 }, aborter2.signal)
   expect(cache.has('bar')).toBe(true)
-  jest.runAllTimers()
+  vi.runAllTimers()
   expect(callCount).toBe(2)
   expect(which).toBe(2)
   expect(await resultP2).toBe(42)
@@ -402,12 +403,12 @@ test('status callback', async () => {
     },
   })
 
-  const s1 = jest.fn()
-  const s2 = jest.fn()
+  const s1 = vi.fn()
+  const s2 = vi.fn()
   const p1 = cache.get('foo', { testing: 'test1' }, aborter.signal, s1)
   const p2 = cache.get('foo', { testing: 'test2' }, aborter.signal, s2)
 
-  jest.runAllTimers()
+  vi.runAllTimers()
   await Promise.all([p1, p2])
   expect(s1).toHaveBeenCalledWith('working...')
   expect(s2).toHaveBeenCalledWith('working...')

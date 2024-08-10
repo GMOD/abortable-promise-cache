@@ -1,8 +1,10 @@
+type Callback = (arg: unknown) => void
+
 export default class AggregateStatusReporter {
-  callbacks = new Set<Function>()
+  callbacks = new Set<Callback>()
   currentMessage: unknown
 
-  addCallback(callback: Function = () => {}): void {
+  addCallback(callback: Callback = () => {}): void {
     this.callbacks.add(callback)
     callback(this.currentMessage)
   }

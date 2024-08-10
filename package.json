@@ -17,10 +17,11 @@
     "src"
   ],
   "scripts": {
-    "test": "jest",
-    "lint": "eslint --report-unused-disable-directives --max-warnings 0 src test",
+    "test": "vitest",
+    "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
     "clean": "rimraf dist esm",
+    "format": "prettier --write .",
     "prebuild": "npm run clean",
     "build:esm": "tsc --target es2018 --outDir esm",
     "build:es5": "tsc --target es2015 --module commonjs --outDir dist",
@@ -29,23 +30,18 @@
     "postversion": "git push --follow-tags"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^9.7.0",
-    "@types/jest": "^29.2.4",
     "@types/node": "^20.14.11",
-    "@typescript-eslint/eslint-plugin": "^7.17.0",
-    "@typescript-eslint/parser": "^7.17.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.1",
+    "@typescript-eslint/parser": "^8.0.1",
     "documentation": "^14.0.1",
-    "eslint": "^9.7.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-unicorn": "^54.0.0",
-    "jest": "^29.3.1",
+    "eslint": "^9.9.0",
+    "eslint-plugin-unicorn": "^55.0.0",
     "prettier": "^3.3.3",
     "quick-lru": "^4.0.0",
     "rimraf": "^6.0.1",
-    "ts-jest": "^29.0.3",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.4.0",
+    "vitest": "^2.0.5"
   },
   "publishConfig": {
     "access": "public"
