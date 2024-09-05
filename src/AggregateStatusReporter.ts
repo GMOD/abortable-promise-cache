@@ -6,7 +6,6 @@ export default class AggregateStatusReporter {
 
   addCallback(callback: Callback = () => {}): void {
     this.callbacks.add(callback)
-    callback(this.currentMessage)
   }
 
   callback(message: unknown) {
