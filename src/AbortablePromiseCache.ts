@@ -1,4 +1,3 @@
-import AggregateAbortController from './AggregateAbortController'
 import AggregateStatusReporter from './AggregateStatusReporter'
 
 import { LRUCache } from 'lru-cache'
@@ -15,7 +14,9 @@ export default class AbortablePromiseCache<
   aggregateAbortControllers = new Map<K, AbortController>()
 
   aggregateStatusReporters = new Map<K, AggregateStatusReporter>()
-
+  constructor(options: LRUCache.Options<K, V, FC> | LRUCache<K, V, FC>) {
+    super({ ...options, max: options.max ?? 50 })
+  }
   fetch(
     k: K,
     fetchOptions: unknown extends FC
@@ -41,10 +42,8 @@ export default class AbortablePromiseCache<
   ): Promise<undefined | V> {
     const val = this.currentlyWatching.get(k)
     if (val === undefined) {
-      console.log('here0', 1)
       this.currentlyWatching.set(k, 1)
     } else {
-      console.log('here', val + 1)
       this.currentlyWatching.set(k, val + 1)
     }
     const { signal, ...rest } = fetchOptions
@@ -66,31 +65,28 @@ export default class AbortablePromiseCache<
     signal?.addEventListener('abort', () => {
       const val = this.currentlyAborted.get(k)
       if (val === undefined) {
-        console.log('wow0', 1)
         this.currentlyAborted.set(k, 1)
       } else {
-        console.log('wow', val + 1)
         this.currentlyAborted.set(k, val + 1)
       }
       if (this.currentlyWatching.get(k) === this.currentlyAborted.get(k)) {
-        console.log(this.currentlyWatching.get(k), this.currentlyAborted.get(k))
         aggregateAbortController.abort()
       }
     })
     // @ts-expect-error
     if (rest.context?.statusCallback) {
       // @ts-expect-error
-      aggregateStatusReporter.addCallback(rest.context?.statusCallback)
+      aggregateStatusReporter.addCallback(rest.context.statusCallback)
     }
 
     return Promise.race([
+      // @ts-expect-error
       super.fetch(k, {
         ...rest,
         signal: aggregateAbortController.signal,
         context: {
           ...rest.context,
           statusCallback: (arg: unknown) => {
-            console.log('WOWOWOWOW', arg)
             aggregateStatusReporter.callback(arg)
           },
         },

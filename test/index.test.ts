@@ -28,26 +28,6 @@ test('no aborting', async () => {
   vi.runAllTimers()
   expect(await resultP).toBe(42)
 })
-//
-// test('arg check', async () => {
-//   const cache = new AbortablePromiseCache({
-//     max: 2,
-//     async fetchMethod(key, staleValue, { signal, options, context }) {
-//       await delay(30)
-//       if (signal.aborted) {
-//         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
-//       }
-//
-//       return 42
-//     },
-//   })
-//
-//   const aborter = new AbortController()
-//   expect(() => {
-//     cache.fetch('foo', { signal: aborter.signal })
-//     aborter.abort()
-//   }).toThrow(/perhaps you meant/)
-// })
 
 test('simple abort', async () => {
   const cache = new AbortablePromiseCache({
@@ -477,7 +457,6 @@ test('status callback', async () => {
     max: 2,
     async fetchMethod(key, staleValue, { signal, options, context }) {
       const { statusCallback } = context
-      // console.log('here', statusCallback)
       await delay(100)
       statusCallback('working...')
       return 'success'
