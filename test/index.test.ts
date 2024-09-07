@@ -1,8 +1,6 @@
 import AbortablePromiseCache from '../src'
 import { test, beforeEach, expect, vi } from 'vitest'
 
-vi.useFakeTimers()
-
 function delay(ms: number) {
   return new Promise(r => setTimeout(r, ms))
 }
@@ -14,7 +12,7 @@ beforeEach(() => {
 test('no aborting', async () => {
   const cache = new AbortablePromiseCache({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal }) {
       await delay(30)
       if (signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
@@ -32,7 +30,7 @@ test('no aborting', async () => {
 test('simple abort', async () => {
   const cache = new AbortablePromiseCache({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal }) {
       await delay(30)
       if (signal.aborted) {
         throw Object.assign(new Error('aborted'), { code: 'ERR_ABORTED' })
@@ -59,7 +57,7 @@ test('cache 2 requests, one aborted', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -106,7 +104,7 @@ test('cache 2 requests, both aborted, and fill aborted', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -150,7 +148,7 @@ test('cache 2 requests, both aborted, one pre-aborted, and fill aborted', async 
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal }) {
       await delay(30)
       if (signal.aborted) {
         // fillAborted = true
@@ -194,7 +192,7 @@ test('cache 2 requests, abort one and wait for it, then make another and check t
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -240,7 +238,7 @@ test('cache 3 requests, 2 aborted, but fill and last request did not abort', asy
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -291,7 +289,7 @@ test('deleting aborts', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -326,7 +324,7 @@ test('clear can delete zero', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -355,7 +353,7 @@ test('clear can delete one', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -390,7 +388,7 @@ test('clear can delete two', async () => {
     { whichCall: number }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { signal, context }) {
       const { whichCall } = context
       callCount += 1
       which = whichCall
@@ -455,7 +453,7 @@ test('status callback', async () => {
     { statusCallback: (arg: string) => void; testing: string }
   >({
     max: 2,
-    async fetchMethod(key, staleValue, { signal, options, context }) {
+    async fetchMethod(_key, _staleValue, { context }) {
       const { statusCallback } = context
       await delay(100)
       statusCallback('working...')

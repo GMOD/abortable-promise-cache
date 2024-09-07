@@ -1,93 +1,75 @@
+import { LRUCache } from 'lru-cache'
 import AggregateStatusReporter from './AggregateStatusReporter'
 
-import { LRUCache } from 'lru-cache'
-
 export default class AbortablePromiseCache<
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   K extends {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   V extends {},
   FC = unknown,
 > extends LRUCache<K, V, FC> {
-  currentlyWatching = new Map<K, number>()
-
-  currentlyAborted = new Map<K, number>()
-
-  aggregateAbortControllers = new Map<K, AbortController>()
-
-  aggregateStatusReporters = new Map<K, AggregateStatusReporter>()
-  constructor(options: LRUCache.Options<K, V, FC> | LRUCache<K, V, FC>) {
-    super({ ...options, max: options.max ?? 50 })
-  }
-  fetch(
-    k: K,
-    fetchOptions: unknown extends FC
-      ? LRUCache.FetchOptions<K, V, FC>
-      : FC extends undefined | void
-        ? LRUCache.FetchOptionsNoContext<K, V>
-        : LRUCache.FetchOptionsWithContext<K, V, FC>,
-  ): Promise<undefined | V>
-
-  // this overload not allowed if context is required
-  fetch(
-    k: unknown extends FC ? K : FC extends undefined | void ? K : never,
-    fetchOptions?: unknown extends FC
-      ? LRUCache.FetchOptions<K, V, FC>
-      : FC extends undefined | void
-        ? LRUCache.FetchOptionsNoContext<K, V>
-        : never,
-  ): Promise<undefined | V>
+  inflight = new Map<
+    K,
+    {
+      count: number
+      abortController: AbortController
+      statusReporter: AggregateStatusReporter
+    }
+  >()
 
   async fetch(
     k: K,
     fetchOptions: LRUCache.FetchOptions<K, V, FC> = {},
   ): Promise<undefined | V> {
-    const val = this.currentlyWatching.get(k)
-    if (val === undefined) {
-      this.currentlyWatching.set(k, 1)
-    } else {
-      this.currentlyWatching.set(k, val + 1)
-    }
+    const val = this.inflight.get(k)
+    const val2 =
+      val === undefined
+        ? {
+            count: 1,
+            abortController: new AbortController(),
+            statusReporter: new AggregateStatusReporter(),
+          }
+        : {
+            ...val,
+            count: val.count + 1,
+          }
+    this.inflight.set(k, val2)
     const { signal, ...rest } = fetchOptions
 
-    let aggregateAbortController = this.aggregateAbortControllers.get(k)
-    if (aggregateAbortController === undefined) {
-      aggregateAbortController = new AbortController()
-      this.aggregateAbortControllers.set(k, aggregateAbortController)
-    }
-
-    let aggregateStatusReporter = this.aggregateStatusReporters.get(k)
-    if (aggregateStatusReporter === undefined) {
-      aggregateStatusReporter = new AggregateStatusReporter()
-      this.aggregateStatusReporters.set(k, aggregateStatusReporter)
-    }
     if (signal?.aborted) {
       throw new Error('aborted')
     }
     signal?.addEventListener('abort', () => {
-      const val = this.currentlyAborted.get(k)
+      const val = this.inflight.get(k)
       if (val === undefined) {
-        this.currentlyAborted.set(k, 1)
-      } else {
-        this.currentlyAborted.set(k, val + 1)
+        // unknown
+        return
       }
-      if (this.currentlyWatching.get(k) === this.currentlyAborted.get(k)) {
-        aggregateAbortController.abort()
+      const currentCount = val.count - 1
+      if (currentCount === 0) {
+        val.abortController.abort()
+        this.inflight.delete(k)
       }
     })
     // @ts-expect-error
     if (rest.context?.statusCallback) {
       // @ts-expect-error
-      aggregateStatusReporter.addCallback(rest.context.statusCallback)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      val2.statusReporter.addCallback(rest.context.statusCallback)
     }
 
     return Promise.race([
       // @ts-expect-error
       super.fetch(k, {
         ...rest,
-        signal: aggregateAbortController.signal,
+        signal: val2.abortController.signal,
         context: {
           ...rest.context,
           statusCallback: (arg: unknown) => {
-            aggregateStatusReporter.callback(arg)
+            const val = this.inflight.get(k)
+            if (val) {
+              val.statusReporter.callback(arg)
+            }
           },
         },
       }),
@@ -100,23 +82,19 @@ export default class AbortablePromiseCache<
   }
 
   delete(key: K) {
-    const abortController = this.aggregateAbortControllers.get(key)
-    if (abortController) {
-      abortController.abort()
+    const val = this.inflight.get(key)
+    if (val) {
+      val.abortController.abort()
     }
-    this.aggregateAbortControllers.delete(key)
-    this.currentlyAborted.delete(key)
-    this.currentlyWatching.delete(key)
+    this.inflight.delete(key)
     return super.delete(key)
   }
 
   clear() {
-    for (const val of this.aggregateAbortControllers.values()) {
-      val.abort()
+    for (const val of this.inflight.values()) {
+      val.abortController.abort()
     }
-    this.aggregateAbortControllers.clear()
-    this.currentlyWatching.clear()
-    this.currentlyAborted.clear()
+    this.inflight.clear()
     super.clear()
   }
 }
