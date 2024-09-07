@@ -21,15 +21,12 @@ aborted, it will stay in the cache.
 
 ```js
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import QuickLRU from 'quick-lru'
 
 const cache = new AbortablePromiseCache({
-  // QuickLRU is a good backing cache to use, but you can use any
-  // cache as long as it supports `get`, `set`, `delete`, and `keys`.
-  cache: new QuickLRU({ maxSize: 1000 }),
+  max: 1000,
 
   // the `fill` callback will be called for a cache miss
-  async fill(requestData, abortSignal) {
+  async fetchMethod(requestData, abortSignal) {
     // do some long-running thing
     return longRunningThing(requestData, abortSignal)
   },
@@ -40,7 +37,10 @@ const cache = new AbortablePromiseCache({
 // Fill requests will be signaled to abort if all the requests for them
 // so far have been aborted.
 const aborter = new AbortController()
-const result = await cache.get('some key', { ...anyStuff }, aborter.signal)
+const result = await cache.fetch('some key', {
+  context: { anyStuff },
+  signal: aborter.signal,
+})
 
 // deleting and clearing will abort any outstanding requests
 cache.delete('some key')
