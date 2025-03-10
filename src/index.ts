@@ -1,1 +1,1 @@
-export { default } from './AbortablePromiseCache'
+export { default } from './AbortablePromiseCache.ts'

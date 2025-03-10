@@ -1,5 +1,5 @@
-import AggregateAbortController from './AggregateAbortController'
-import AggregateStatusReporter from './AggregateStatusReporter'
+import AggregateAbortController from './AggregateAbortController.ts'
+import AggregateStatusReporter from './AggregateStatusReporter.ts'
 
 type Callback = (arg: unknown) => void
 

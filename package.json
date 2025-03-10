@@ -4,8 +4,16 @@
   "description": "add AbortController support to a cache of async requests",
   "license": "MIT",
   "repository": "GMOD/abortable-promise-cache",
-  "main": "dist/index.js",
-  "module": "esm/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": {
+      "import": "./esm/index.js"
+    },
+    "require": {
+      "require": "./dist/index.js"
+    }
+  },
   "author": {
     "name": "Robert Buels",
     "email": "rbuels@gmail.com",
@@ -30,12 +38,10 @@
     "postversion": "git push --follow-tags"
   },
   "devDependencies": {
-    "@types/node": "^20.14.11",
-    "@typescript-eslint/eslint-plugin": "^8.0.1",
-    "@typescript-eslint/parser": "^8.0.1",
+    "@types/node": "^22.15.3",
     "documentation": "^14.0.1",
     "eslint": "^9.9.0",
-    "eslint-plugin-unicorn": "^56.0.1",
+    "eslint-plugin-unicorn": "^59.0.0",
     "prettier": "^3.3.3",
     "quick-lru": "^4.0.0",
     "rimraf": "^6.0.1",
