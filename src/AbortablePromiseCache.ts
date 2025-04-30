@@ -1,8 +1,6 @@
 import AggregateAbortController from './AggregateAbortController.ts'
 import AggregateStatusReporter from './AggregateStatusReporter.ts'
 
-type Callback = (arg: unknown) => void
-
 interface Cache<U> {
   delete: (key: string) => void
   keys: () => Iterator<string>
@@ -10,20 +8,20 @@ interface Cache<U> {
   set: (key: string, value: U) => void
   has: (key: string) => boolean
 }
-type FillCallback<T, U> = (
+type FillCallback<T, U, V> = (
   data: T,
   signal?: AbortSignal,
-  statusCallback?: Callback,
+  statusCallback?: (arg: V) => void,
 ) => Promise<U>
 
-interface Entry<U> {
+interface Entry<U, V> {
   aborter: AggregateAbortController
   settled: boolean
   readonly aborted: boolean
-  statusReporter: AggregateStatusReporter
+  statusReporter: AggregateStatusReporter<V>
   promise: Promise<U>
 }
-export default class AbortablePromiseCache<T, U> {
+export default class AbortablePromiseCache<T, U, V> {
   /**
    * @param {object} args constructor args
    * @param {Function} args.fill fill callback, will be called with sig `fill(data, signal)`
@@ -31,15 +29,15 @@ export default class AbortablePromiseCache<T, U> {
    *   `delete(key)`, and `keys() -> iterator`
    */
 
-  private cache: Cache<Entry<U>>
-  private fillCallback: FillCallback<T, U>
+  private cache: Cache<Entry<U, V>>
+  private fillCallback: FillCallback<T, U, V>
 
   constructor({
     fill,
     cache,
   }: {
-    fill: FillCallback<T, U>
-    cache: Cache<Entry<U>>
+    fill: FillCallback<T, U, V>
+    cache: Cache<Entry<U, V>>
   }) {
     if (typeof fill !== 'function') {
       throw new TypeError('must pass a fill function')
@@ -75,19 +73,24 @@ export default class AbortablePromiseCache<T, U> {
     )
   }
 
-  evict(key: string, entry: Entry<U>) {
+  evict(key: string, entry: Entry<U, V>) {
     if (this.cache.get(key) === entry) {
       this.cache.delete(key)
     }
   }
 
-  fill(key: string, data: T, signal?: AbortSignal, statusCallback?: Callback) {
+  fill(
+    key: string,
+    data: T,
+    signal?: AbortSignal,
+    statusCallback?: (arg: V) => void,
+  ) {
     const aborter = new AggregateAbortController()
-    const statusReporter = new AggregateStatusReporter()
+    const statusReporter = new AggregateStatusReporter<V>()
     statusReporter.addCallback(statusCallback)
-    const newEntry: Entry<U> = {
+    const newEntry: Entry<U, V> = {
       aborter: aborter,
-      promise: this.fillCallback(data, aborter.signal, (message: unknown) => {
+      promise: this.fillCallback(data, aborter.signal, (message: V) => {
         statusReporter.callback(message)
       }),
       settled: false,
@@ -171,7 +174,7 @@ export default class AbortablePromiseCache<T, U> {
     key: string,
     data: T,
     signal?: AbortSignal,
-    statusCallback?: Callback,
+    statusCallback?: (arg: V) => void,
   ): Promise<U> {
     if (!signal && data instanceof AbortSignal) {
       throw new TypeError(

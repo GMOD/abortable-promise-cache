@@ -1,15 +1,15 @@
-type Callback = (arg: unknown) => void
+export default class AggregateStatusReporter<V> {
+  callbacks = new Set<(arg: V) => void>()
+  currentMessage?: V
 
-export default class AggregateStatusReporter {
-  callbacks = new Set<Callback>()
-  currentMessage: unknown
-
-  addCallback(callback: Callback = () => {}): void {
+  addCallback(callback: (arg: V) => void = () => {}): void {
     this.callbacks.add(callback)
-    callback(this.currentMessage)
+    if (this.currentMessage) {
+      callback(this.currentMessage)
+    }
   }
 
-  callback(message: unknown) {
+  callback(message: V) {
     this.currentMessage = message
     for (const elt of this.callbacks) {
       elt(message)
