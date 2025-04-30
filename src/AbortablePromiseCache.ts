@@ -21,7 +21,7 @@ interface Entry<U, V> {
   statusReporter: AggregateStatusReporter<V>
   promise: Promise<U>
 }
-export default class AbortablePromiseCache<T, U, V> {
+export default class AbortablePromiseCache<T, U, V = string> {
   /**
    * @param {object} args constructor args
    * @param {Function} args.fill fill callback, will be called with sig `fill(data, signal)`
