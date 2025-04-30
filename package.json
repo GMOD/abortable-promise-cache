@@ -1,6 +1,6 @@
 {
   "name": "@gmod/abortable-promise-cache",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "add AbortController support to a cache of async requests",
   "license": "MIT",
   "repository": "GMOD/abortable-promise-cache",
