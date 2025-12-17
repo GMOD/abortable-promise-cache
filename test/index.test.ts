@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { vi, expect, test, beforeEach } from 'vitest'
-import QuickLRU from 'quick-lru'
+import QuickLRU from '@jbrowse/quick-lru'
 
 import AbortablePromiseCache from '../src'
 

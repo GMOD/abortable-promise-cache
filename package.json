@@ -39,16 +39,16 @@
     "postversion": "git push --follow-tags"
   },
   "devDependencies": {
+    "@jbrowse/quick-lru": "^7.0.0",
     "@types/node": "^22.15.3",
     "documentation": "^14.0.1",
-    "eslint": "^9.9.0",
-    "eslint-plugin-unicorn": "^59.0.0",
-    "prettier": "^3.3.3",
-    "quick-lru": "^4.0.0",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.4.0",
-    "vitest": "^3.0.4"
+    "eslint": "^9.39.2",
+    "eslint-plugin-unicorn": "^62.0.0",
+    "prettier": "^3.7.4",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^4.0.16"
   },
   "publishConfig": {
     "access": "public"
