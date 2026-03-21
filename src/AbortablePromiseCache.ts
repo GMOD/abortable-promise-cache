@@ -64,7 +64,7 @@ export default class AbortablePromiseCache<T, U, V = string> {
       // DOMException
       exception.name === 'AbortError' ||
       // standard-ish non-DOM abort exception
-      //@ts-ignore
+      // @ts-expect-error - exception.code is not in the Error type
       exception.code === 'ERR_ABORTED' ||
       // stringified DOMException
       exception.message === 'AbortError: aborted' ||

@@ -14,7 +14,7 @@ export default class AggregateAbortController {
    *  will be treated as a null-signal, and this abortcontroller will no
    *  longer be abortable.
    */
-  //@ts-ignore
+  // @ts-expect-error - NullSignal is not compatible with AbortSignal
   addSignal(signal: AbortSignal = new NullSignal()): void {
     if (this.signal.aborted) {
       throw new Error('cannot add a signal, already aborted!')
