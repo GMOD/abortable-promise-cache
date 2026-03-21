@@ -23,6 +23,7 @@ export default tseslint.config(
     rules: {
       'no-underscore-dangle': 0,
       curly: 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
       'unicorn/no-null': 0,
       'unicorn/prevent-abbreviations': 0,
       'unicorn/filename-case': 0,
