@@ -1,7 +1,7 @@
-import { vi, expect, test, beforeEach } from 'vitest'
 import QuickLRU from '@jbrowse/quick-lru'
+import { beforeEach, expect, test, vi } from 'vitest'
 
-import AbortablePromiseCache from '../src'
+import AbortablePromiseCache from '../src/index.ts'
 
 vi.useFakeTimers()
 
