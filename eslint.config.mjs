@@ -31,7 +31,10 @@ export default tseslint.config(
       'unicorn/prevent-abbreviations': 'off',
       'unicorn/filename-case': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-expect-error': 'allow-with-description', 'ts-ignore': true }],
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        { 'ts-expect-error': 'allow-with-description', 'ts-ignore': true },
+      ],
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       semi: ['error', 'never'],

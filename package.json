@@ -3,7 +3,10 @@
   "version": "3.0.4",
   "description": "add AbortController support to a cache of async requests",
   "license": "MIT",
-  "repository": "GMOD/abortable-promise-cache",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/abortable-promise-cache.git"
+  },
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
