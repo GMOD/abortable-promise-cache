@@ -8,14 +8,10 @@
     "url": "https://github.com/GMOD/abortable-promise-cache.git"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
   "exports": {
-    "import": {
-      "import": "./esm/index.js"
-    },
-    "require": {
-      "require": "./dist/index.js"
-    }
+    "import": "./esm/index.js",
+    "require": "./dist/index.js"
   },
   "author": {
     "name": "Robert Buels",
@@ -29,23 +25,24 @@
   ],
   "scripts": {
     "test": "vitest",
-    "lint": "eslint --report-unused-disable-directives --max-warnings 0",
-    "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
     "clean": "rimraf dist esm",
     "format": "prettier --write .",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --target es2020 --outDir esm",
-    "build:es5": "tsc --target es2020 --module commonjs --moduleResolution bundler --outDir dist",
+    "lint": "eslint --report-unused-disable-directives --max-warnings 0",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsc --outDir esm",
+    "build:es5": "tsc --module commonjs --moduleResolution bundler --outDir dist",
     "postbuild:es5": "echo '{\"type\": \"commonjs\"}' > dist/package.json",
-    "build": "npm run build:esm && npm run build:es5",
-    "prepublishOnly": "npm run lint && npm test run && npm run build",
-    "postversion": "git push --follow-tags"
+    "preversion": "pnpm lint && pnpm test --run && pnpm build",
+    "postversion": "git push --follow-tags",
+    "build": "pnpm build:esm && pnpm build:es5",
+    "docs": "documentation readme --shallow src/AbortablePromiseCache.js --section=API",
+    "prepublishOnly": "pnpm lint && npm test run && pnpm build"
   },
   "devDependencies": {
     "@jbrowse/quick-lru": "^7.3.5",
     "@types/node": "^25.5.0",
     "documentation": "^14.0.3",
-    "eslint": "^9.39.4",
+    "eslint": "^10.2.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unicorn": "^64.0.0",
     "prettier": "^3.8.1",
@@ -56,5 +53,8 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "bioinformatics"
+  ]
 }
