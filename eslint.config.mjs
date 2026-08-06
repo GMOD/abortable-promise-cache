@@ -25,6 +25,8 @@ export default tseslint.config(
     rules: {
       'no-underscore-dangle': 'off',
       curly: 'error',
+      'object-shorthand': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       eqeqeq: 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       'unicorn/no-null': 'off',

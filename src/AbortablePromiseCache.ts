@@ -89,7 +89,7 @@ export default class AbortablePromiseCache<T, U, V = string> {
     const statusReporter = new AggregateStatusReporter<V>()
     statusReporter.addCallback(statusCallback)
     const newEntry: Entry<U, V> = {
-      aborter: aborter,
+      aborter,
       promise: this.fillCallback(data, aborter.signal, (message: V) => {
         statusReporter.callback(message)
       }),

@@ -27,6 +27,7 @@
     "test": "vitest",
     "clean": "rimraf dist esm",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "prebuild": "pnpm clean",
     "build:esm": "tsc --outDir esm",
