@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GMOD/abortable-promise-cache.git"
+    "url": "git+https://github.com/GMOD/abortable-promise-cache.git"
   },
   "type": "module",
   "main": "dist/index.js",
