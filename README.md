@@ -3,6 +3,11 @@
 [![NPM version](https://img.shields.io/npm/v/@gmod/abortable-promise-cache.svg?style=flat-square)](https://npmjs.org/package/abortable-promise-cache)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/GMOD/abortable-promise-cache/push.yml?branch=master)](https://github.com/GMOD/abortable-promise-cache/actions)
 
+**Superseded by [`@gmod/shared-read-cache`](https://github.com/GMOD/shared-read-cache).**
+That package fixes two bugs here: a listener that never came back off a
+caller's signal, and a waiter that was already aborted on arrival, which kept
+its abort count from ever reaching zero. New projects should use it instead.
+
 Adds AbortController/AbortSignal semantics to a cache of promises. Each `get`
 from the cache can optionally take an `AbortSignal` object that lets that
 request be aborted.
